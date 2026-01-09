@@ -1,2 +1,125 @@
-This project analyzes a pizza sales dataset using SQL (Microsoft SQL Server) 
-to answer key business questions related to revenue, orders, and customer purchasing behavior.
+
+--KPIS
+select * from order_details
+
+--1) Total Revenue
+SELECT 
+ round(SUM(quantity * price), 2) AS [Total Revenue]
+FROM order_details AS o
+ JOIN pizzas AS p
+ ON o.pizza_id = p.pizza_id
+ 
+ --2) Average Order Value
+ --total order value / order count
+ SELECT 
+ round(SUM(quantity * price)/COUNT(DISTINCT order_id), 2)AS [Average Order Value]
+ FROM order_details AS o
+ JOIN pizzas AS p
+ ON o.pizza_id = p.pizza_id
+
+ --3) Total pizzas sold
+ SELECT 
+  SUM(quantity) AS [Total Pizzas Sold]
+ FROM order_details
+
+  --4) Total orders
+ SELECT 
+  COUNT(DISTINCT order_id) AS [Total orders]
+ FROM order_details
+
+ --5)Average Pizza per order
+ --pizzas sold/number of pizzas
+ SELECT 
+  SUM(quantity)/COUNT(DISTINCT order_id) AS [Average Pizzas Per Order]
+FROM order_details
+
+--QUESTIONS TO ANSWER
+
+--1) Daily Trends for Total Orders
+
+select 
+ FORMAT( date, 'dddd') AS DayOfWeek,
+ COUNT(DISTINCT order_id) AS total_orders
+FROM [order]
+GROUP BY FORMAT( date, 'dddd')
+ORDER BY  total_orders DESC
+
+--2)Hourly Trends For Total Orders
+select 
+ DATEPART( HOUR, time) AS [Hour],
+ COUNT(DISTINCT order_id) As Count
+FROM [order]
+GROUP BY  DATEPART( HOUR, time)
+ORDER BY Hour DESC
+
+--3) Percentage of sales by pizza category
+--a; calculate total revenue per category
+--% sales calculated as (a:/total revenue) * 100
+
+SELECT 
+category,
+SUM(quantity * price) AS revenue,
+round(SUM(quantity * price ) * 100 / (
+  SELECT SUM(quantity * price)
+  FROM pizzas AS p2
+  JOIN order_details AS o2 ON o2.pizza_id = p2.pizza_id
+), 2)AS percentage_sales
+FROM
+pizzas AS P
+JOIN pizza_types AS pt ON p.pizza_type_id = pt.pizza_type_id
+JOIN order_details AS o ON p.pizza_id = p.pizza_id
+GROUP BY category
+ORDER BY percentage_sales DESC
+
+--4) Percentage of Sales by Pizza Size
+SELECT 
+size,
+SUM(quantity * price) AS revenue,
+round(SUM(quantity * price ) * 100 / (
+  SELECT SUM(quantity * price)
+  FROM pizzas AS p2
+  JOIN order_details AS o2 ON o2.pizza_id = p2.pizza_id
+), 2)AS percentage_sales
+FROM
+pizzas AS P
+JOIN pizza_types AS pt ON p.pizza_type_id = pt.pizza_type_id
+JOIN order_details AS o ON p.pizza_id = p.pizza_id
+GROUP BY size
+ORDER BY percentage_sales DESC
+
+--5) Total Pizzas Sold by Pizza Category
+
+SELECT 
+category,
+SUM(quantity) AS quantity_sold
+FROM
+order_details AS O
+JOIN pizzas AS P ON o.pizza_id = p.pizza_id
+JOIN pizza_types AS PT ON p.pizza_type_id = PT.pizza_type_id
+GROUP BY category
+ORDER BY SUM(quantity) DESC;
+
+--6) Top 5 Best Sellers By Total Pizzas Sold
+SELECT Top 5
+name,
+SUM(quantity) AS total_pizzas_sold
+FROM
+order_details AS O
+JOIN pizzas AS P ON o.pizza_id = p.pizza_id
+JOIN pizza_types AS PT ON p.pizza_type_id = PT.pizza_type_id
+GROUP BY name
+ORDER BY SUM(quantity) DESC
+
+--6) Bottom 5 Sellers By Total Pizzas Sold
+SELECT Top 5
+name,
+SUM(quantity) AS total_pizzas_sold
+FROM
+order_details AS O
+JOIN pizzas AS P ON o.pizza_id = p.pizza_id
+JOIN pizza_types AS PT ON p.pizza_type_id = PT.pizza_type_id
+GROUP BY name
+ORDER BY SUM(quantity) ASC
+
+select *
+from order_details
