@@ -1,6 +1,6 @@
 HR Analytics Dashboard (Power BI)
 
-![Dashboard Screenshot](screenshots/dashboard.png)
+![Dashboard Screenshot](hr-analysis/Hr Dashboard.png)
 
 A Power BI dashboard built to analyze HR data, focusing on employee count, gender distribution, department breakdown, and attrition insights.
 Tools used: Power BI, DAX, Power Query  
